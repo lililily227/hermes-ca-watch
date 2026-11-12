@@ -12,7 +12,7 @@
 
 ## 手机通知配置
 
-1. iPhone 安装 **Bark - Custom Notifications**，打开 App 复制你的设备 Key（请勿发给别人）。
+1. iPhone 安装 **Bark - Custom Notifications**，先点首页「发送测试」确认通知正常。**不要复制「设置」中的 Device Token（那是 Apple 的 APNs 推送令牌，不能用于 Bark 推送 API）。** 在 Bark **首页「使用示例」**中找到 `https://api.day.app/你的Key/title/body`，只取 `api.day.app/` 之后、下一个 `/` 之前的那串 **Device Key**。可点击首页「复制」把示例命令临时粘贴进手机备忘录再截取 Key，不要将完整命令或 Key 发给别人。
 2. 进入本仓库 **Settings → Secrets and variables → Actions → New repository secret**。
 3. Name 填写 `BARK_KEY`，Secret 填写 Bark 私密 Key。
 4. 进入 **Actions → Hermes Canada Neo Garden 23 alerts → Run workflow**，先选 `audit` 检查是否能读取允许公开的数据，再选 `test-push` 测试手机提醒，最后选 `monitor` 建立监测基线。
