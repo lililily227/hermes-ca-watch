@@ -1,0 +1,30 @@
+{
+  "region": "ca/en",
+  "sitemap_index": "https://www.hermes.com/ca/en/sitemap_index.xml",
+  "category_pages": [
+    "https://www.hermes.com/ca/en/category/leather-goods/bags-and-clutches/womens-bags-and-clutches/"
+  ],
+  "target_product_codes": [
+    "H086418CKAC",
+    "H086418CKAA",
+    "H086418CKAF"
+  ],
+  "target_names": {
+    "H086418CKAC": "Neo Garden 23｜米白＋黑色",
+    "H086418CKAA": "Neo Garden 23｜米白＋深石板灰",
+    "H086418CKAF": "Neo Garden 23｜米白＋冰川蓝＋深灰"
+  },
+  "target_product_urls": {
+    "H086418CKAC": "https://www.hermes.com/ca/en/product/neo-garden-23-bag-H086418CKAC/",
+    "H086418CKAA": "https://www.hermes.com/ca/en/product/neo-garden-23-bag-H086418CKAA/",
+    "H086418CKAF": "https://www.hermes.com/ca/en/product/neo-garden-23-bag-H086418CKAF/"
+  },
+  "max_child_sitemaps_per_run": 4,
+  "max_product_page_checks_per_run": 3,
+  "max_notifications_per_run": 3,
+  "minimum_product_check_interval_minutes": 60,
+  "http_timeout_seconds": 12,
+  "max_response_megabytes": 12,
+  "user_agent": "HermesPersonalWatch/1.0 (personal non-commercial monitoring; respects robots.txt)",
+  "bark_server": "https://api.day.app"
+}
