@@ -1,0 +1,57 @@
+name: Hermes Canada Neo Garden 23 alerts
+
+on:
+  schedule:
+    # 15-minute sampling; GitHub schedules may be delayed or missed.
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Check data sources / Test Bark / Monitor'
+        required: true
+        default: audit
+        type: choice
+        options:
+          - audit
+          - test-push
+          - monitor
+
+permissions:
+  contents: write
+
+concurrency:
+  group: neo-garden-23-watch
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test program
+        run: python -m unittest discover -s tests -v
+      - name: Audit, test push, or monitor
+        env:
+          BARK_KEY: ${{ secrets.BARK_KEY }}
+          RUN_MODE: ${{ github.event.inputs.mode || 'monitor' }}
+        run: |
+          case "$RUN_MODE" in
+            audit) python monitor.py --audit ;;
+            test-push) python monitor.py --test-push ;;
+            monitor) python monitor.py ;;
+            *) echo "Invalid mode" >&2; exit 2 ;;
+          esac
+      - name: Save monitoring state
+        if: ${{ success() && (github.event_name == 'schedule' || github.event.inputs.mode == 'monitor') }}
+        run: |
+          if ! git diff --quiet -- state.json; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add state.json
+            git commit -m 'Update Neo Garden monitoring state [skip ci]'
+            git push
+          fi
