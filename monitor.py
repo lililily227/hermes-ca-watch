@@ -207,25 +207,41 @@ def product_status(site, url, sku):
 
 
 def bark(cfg, title, message, url):
-    key = os.environ.get("BARK_KEY", "")
+    # Never print the device key or a URL containing it in public Actions logs.
+    key = os.environ.get("BARK_KEY", "").strip()
     if not key:
         print("[push] BARK_KEY not configured; no notification sent")
         return False
+    if not re.fullmatch(r"[A-Za-z0-9_-]{12,128}", key):
+        print("[push] Invalid BARK_KEY format. In GitHub secret, paste only the Device Token, not a URL or curl command.")
+        return False
     server = cfg["bark_server"].rstrip("/")
-    if not server.startswith("https://"):
-        raise ValueError("Bark server must be HTTPS")
+    if server != "https://api.day.app":
+        raise ValueError("Bark server must be the official https://api.day.app")
     payload = {"device_key": key, "title": title, "body": message,
                "url": url, "group": "Hermes-CA", "level": "timeSensitive"}
     request = Request(server + "/push", data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-                      headers={"Content-Type": "application/json"}, method="POST")
+                      headers={"Content-Type": "application/json; charset=utf-8"}, method="POST")
     try:
         with build_opener().open(request, timeout=12) as response:
-            answer = json.loads(response.read(2048).decode("utf-8", "replace"))
-            ok = response.status == 200 and answer.get("code") in (0, 200)
-            print("[push] delivered" if ok else "[push] not confirmed")
+            raw = response.read(2048).decode("utf-8", "replace")
+            try:
+                answer = json.loads(raw)
+            except ValueError:
+                print("[push] Server returned a non-JSON response (HTTP", response.status, ")")
+                return False
+            result = answer.get("code") if isinstance(answer, dict) else None
+            ok = response.status == 200 and result in (0, 200)
+            print("[push] Delivered" if ok else "[push] Server did not confirm delivery; HTTP %s; code %s" % (response.status, str(result)[:12]))
             return ok
-    except (HTTPError, URLError, ValueError):
-        print("[push] request failed")
+    except HTTPError as exc:
+        print("[push] HTTP error", exc.code, "(key and private response withheld)")
+        return False
+    except URLError as exc:
+        print("[push] Connection error:", type(exc.reason).__name__)
+        return False
+    except (OSError, ValueError) as exc:
+        print("[push] Request failed:", type(exc).__name__)
         return False
 
 
