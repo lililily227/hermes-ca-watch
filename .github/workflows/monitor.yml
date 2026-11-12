@@ -6,9 +6,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/monitor.yml'
-  schedule:
-    # 15-minute sampling; GitHub schedules may be delayed or missed.
-    - cron: '7,22,37,52 * * * *'
+  # Scheduled public-source checks paused after HTTP 403 from Hermes.
+  # Manual audit remains available; do not bypass site access restrictions.
   workflow_dispatch:
     inputs:
       mode:
