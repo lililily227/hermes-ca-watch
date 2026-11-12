@@ -235,7 +235,18 @@ def bark(cfg, title, message, url):
             print("[push] Delivered" if ok else "[push] Server did not confirm delivery; HTTP %s; code %s" % (response.status, str(result)[:12]))
             return ok
     except HTTPError as exc:
-        print("[push] HTTP error", exc.code, "(key and private response withheld)")
+        # Classify errors safely. Never print the raw server response: it may
+        # contain the user's private device key or other sensitive data.
+        raw = exc.read(2048).decode("utf-8", "replace").lower()
+        if exc.code == 400 and any(word in raw for word in
+                                   ("device token", "device key", "device_key", "device not found")):
+            print("[push] HTTP 400: Bark could not validate the device key. Re-register device in Bark and update GitHub BARK_KEY.")
+        elif exc.code == 400:
+            print("[push] HTTP 400: Bark rejected the request. First tap Send Test in Bark, then re-copy current Device Token into GitHub BARK_KEY.")
+        elif exc.code in (401, 403):
+            print("[push] HTTP", exc.code, ": Bark authorization rejected (check device key)")
+        else:
+            print("[push] HTTP error", exc.code, "(private response withheld)")
         return False
     except URLError as exc:
         print("[push] Connection error:", type(exc.reason).__name__)
