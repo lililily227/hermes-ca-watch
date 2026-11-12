@@ -1,6 +1,11 @@
 name: Hermes Canada Neo Garden 23 alerts
 
 on:
+  # Execute only the non-mutating public-source audit when workflow is edited.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/monitor.yml'
   schedule:
     # 15-minute sampling; GitHub schedules may be delayed or missed.
     - cron: '7,22,37,52 * * * *'
@@ -37,7 +42,7 @@ jobs:
       - name: Audit, test push, or monitor
         env:
           BARK_KEY: ${{ secrets.BARK_KEY }}
-          RUN_MODE: ${{ github.event.inputs.mode || 'monitor' }}
+          RUN_MODE: ${{ github.event_name == 'push' && 'audit' || github.event.inputs.mode || 'monitor' }}
         run: |
           case "$RUN_MODE" in
             audit) python monitor.py --audit ;;
